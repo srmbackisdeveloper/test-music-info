@@ -1,0 +1,294 @@
+basePath: /
+definitions:
+  models.Music:
+    properties:
+      createdAt:
+        type: string
+      group:
+        type: string
+      id:
+        type: integer
+      link:
+        type: string
+      releaseDate:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.AddSongRequest:
+    properties:
+      group:
+        type: string
+      song:
+        type: string
+    required:
+    - group
+    - song
+    type: object
+  types.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  types.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  types.PaginatedSongsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Music'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      totalPages:
+        type: integer
+      totalSongs:
+        type: integer
+    type: object
+  types.PaginatedVersesResponse:
+    properties:
+      data:
+        items:
+          type: string
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      totalPages:
+        type: integer
+      totalVerses:
+        type: integer
+    type: object
+  types.SongDetail:
+    properties:
+      link:
+        type: string
+      releaseDate:
+        type: string
+      text:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: This is an API for managing a music library, including adding, updating,
+    deleting, and fetching songs with lyrics.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://example.com/terms/
+  title: Music Library API
+  version: "1.0"
+paths:
+  /info:
+    get:
+      consumes:
+      - application/json
+      description: Fetches a song by its group and title
+      parameters:
+      - description: The group of the song
+        in: query
+        name: group
+        required: true
+        type: string
+      - description: The title of the song
+        in: query
+        name: song
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The requested song
+          schema:
+            $ref: '#/definitions/types.SongDetail'
+        "400":
+          description: Invalid or missing query parameters
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Retrieve a song
+      tags:
+      - Songs
+  /lyrics/{id}:
+    get:
+      description: Retrieves the lyrics of a song in a paginated format
+      parameters:
+      - description: The ID of the song
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of verses per page (default: 5)'
+        in: query
+        name: limit
+        type: integer
+      responses:
+        "200":
+          description: Paginated lyrics of the song
+          schema:
+            $ref: '#/definitions/types.PaginatedVersesResponse'
+        "400":
+          description: Invalid song ID or pagination parameters
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to fetch the lyrics
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Get lyrics of a song
+      tags:
+      - Songs
+  /music:
+    get:
+      description: Retrieves a paginated list of songs with optional filters
+      parameters:
+      - description: Filter by group name
+        in: query
+        name: group
+        type: string
+      - description: Filter by song title
+        in: query
+        name: title
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of songs per page (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      responses:
+        "200":
+          description: Paginated list of songs
+          schema:
+            $ref: '#/definitions/types.PaginatedSongsResponse'
+        "500":
+          description: Failed to fetch the list of songs
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: List all songs
+      tags:
+      - Songs
+    post:
+      consumes:
+      - application/json
+      description: Adds a new song to the database
+      parameters:
+      - description: Request to add a song
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/types.AddSongRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: The added song
+          schema:
+            $ref: '#/definitions/models.Music'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to add the song to the database
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Add a new song
+      tags:
+      - Songs
+  /music/{id}:
+    delete:
+      description: Deletes a song by its ID
+      parameters:
+      - description: The ID of the song to delete
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Deletion success message
+          schema:
+            $ref: '#/definitions/types.MessageResponse'
+        "400":
+          description: Invalid song ID
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to delete the song
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Delete a song
+      tags:
+      - Songs
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing song by its ID
+      parameters:
+      - description: The ID of the song to update
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated song details
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/models.Music'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The updated song
+          schema:
+            $ref: '#/definitions/models.Music'
+        "400":
+          description: Invalid song ID or payload
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Failed to update the song
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Update a song
+      tags:
+      - Songs
+swagger: "2.0"
